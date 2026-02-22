@@ -1,14 +1,30 @@
+const { Pool } = require('pg');
+require('dotenv').config();
+
 /**
- * PostgreSQL Database Schema
+ * PostgreSQL Database Connection Pool
  *
- * This file exports an array of SQL commands to set up the necessary tables,
+ * Supports DATABASE_URL (for Render, Heroku, etc.) or individual connection parameters
+ */
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+module.exports = pool;
+
+// --- PostgreSQL Database Schema ---
+/**
+ * SQL Schema array for setting up the necessary tables,
  * indexes, stored procedures (functions), and triggers for the FPL/F1 application.
  *
- * To execute these, you would typically loop through this array using a database
- * client library like 'pg' within a Node.js environment.
+ * To execute these, loop through this array using a database client library like 'pg'.
  */
-
-export const SQL_SCHEMA = [
+const SQL_SCHEMA = [
     // 1. --- TABLES (CORE) ---
 
     // USERS Table
@@ -166,3 +182,5 @@ export const SQL_SCHEMA = [
     // Note: This line is commented out as per your original request, but included for completeness.
     // `DROP TABLE IF EXISTS F1_STANDINGS, F1_GW_STATS, F1_CHIP_USAGE, F1_DRIVER_ASSIGNMENTS, F1_CONSTRUCTORS, F1_LEAGUE, users_history, users CASCADE;`
 ];
+
+module.exports.SQL_SCHEMA = SQL_SCHEMA;
